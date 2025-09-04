@@ -1,6 +1,4 @@
-# تجاهل قاعدة البيانات
 contributors.db
 contributors.db-journal
 
-# تجاهل مجلد البيئة الافتراضية
 fsql/
