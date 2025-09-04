@@ -16,7 +16,7 @@ def appointments():
 
     return str([dict(row) for row in rows])
 
-
+#test
 
 if __name__ == '__main__':
     app.run(debug=True)
