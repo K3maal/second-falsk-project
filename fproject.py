@@ -2,7 +2,7 @@ from flask import Flask
 import sqlite3
 
 def get_db_connection():
-    conn = sqlite3.connect('contributors.db')
+    conn = sqlite3.connect('data.db')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -11,13 +11,12 @@ app = Flask (__name__)
 @app.route('/')
 def appointments():
     conn = get_db_connection()
-    rows = conn.execute('SELECT * FROM contributors').fetchall()
+    rows = conn.execute('SELECT * FROM clients').fetchall()
     conn.close()
+
     return str([dict(row) for row in rows])
 
-#test
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-    #test
