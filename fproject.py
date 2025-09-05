@@ -6,6 +6,21 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS clients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            date TEXT NOT NULL,
+            time TEXT NOT NULL,
+            type TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
 app = Flask (__name__)
 
 @app.route('/')
@@ -16,7 +31,6 @@ def appointments():
 
     return str([dict(row) for row in rows])
 
-#test
 
 if __name__ == '__main__':
     app.run(debug=True)
