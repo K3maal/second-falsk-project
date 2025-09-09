@@ -1,5 +1,10 @@
-from flask import Flask
+from flask import Flask, jsonify
 import sqlite3, os 
+
+
+app = Flask (__name__)
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "data.db")
 
 def get_db_connection():
     conn = sqlite3.connect('data.db')
@@ -21,7 +26,6 @@ def init_db():
     conn.close()
 
 
-app = Flask (__name__)
 
 
 @app.route('/')
@@ -29,34 +33,38 @@ def appointments():
     conn = get_db_connection()
     rows = conn.execute('SELECT * FROM clients').fetchall()
     conn.close()
-    return str([dict(row) for row in rows])
+    return jsonify([dict(row) for row in rows])
+
 
 @app.route('/add/<name>/<date>/<time>/<type>')
 def add(name, date, time, type):
     conn = get_db_connection()
-    conn.execute("INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
-                 (name, date, time, type))
+    conn.execute(
+    "INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
+    (name, date, time, type)
+)
     conn.commit()
+    new_row = conn.execute("SELECT * FROM clients ORDER BY id DESC LIMIT 1").fetchone()
     conn.close()
-    return f"Added: {name} at {date} {time} for {type}"
+    return jsonify({"status": "ok", "added":dict(new_row)}), 201
+
 
 @app.route('/delete/<int:id>')
 def delete(id):
     conn = get_db_connection()
-    conn.execute ("DELET FROM clients WHERE id = ?",(id,))
+    cur = conn.execute("DELETE FROM clients WHERE id = ?", (id,))
     conn.commit()
     conn.close()
-    return f"Deleted appointment {id}"
+    return jsonify({"status": "ok", "deleted_id": id, "rows_affected": cur.rowcount})
+
 
 @app.route('/update/<int:id>/<new_type>')
 def update(id, new_type):
     conn = get_db_connection()
-    conn.execute("UPDATE clients SET type = ?WHERE id = ?", (new_type, id))
+    cur = conn.execute("UPDATE clients SET type = ? WHERE id = ?", (new_type, id))
     conn.commit()
     conn.close()
-    return f"UPDATED apointment {id} to {new_type}"
-
-
+    return jsonify({"status": "ok", "updated_id": id, "rows_affected": cur.rowcount, "new_type": new_type})
 
 
 
