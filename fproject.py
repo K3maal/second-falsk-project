@@ -1,4 +1,4 @@
-from flask import Flask, jsonify,request ,render_template
+from flask import Flask, jsonify,request ,render_template, redirect, url_for
 import sqlite3, os 
 
 
@@ -53,52 +53,64 @@ def home():
     <head>
         <title>Barber Shop</title>
 
-         <style>
-             body { 
-         font-family: Arial, sans-serif; 
-         margin: 40px; 
-         background: #f4f4f4; 
-        }
-             h1 {
-          color: #333; 
-        }
-             form {
-          background: #fff; 
-          padding: 20px; 
-          border-radius: 8px; 
-          margin-bottom: 30px; 
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
-        }
-             input, select { 
-         padding: 8px; 
-         margin: 8px 0; 
-         width: 100%; 
-         border: 1px solid #ccc; 
-         border-radius: 4px; 
-        }
-             button { 
-         padding: 10px 20px; 
-         background: #333; 
-         color: white; 
-         border: none; 
-         border-radius: 4px; 
-         cursor: pointer; 
-        }
-             button:hover { 
-         background: #555; 
-        }
-             ul {
-          list-style-type: none; 
-          padding: 0; 
-        }
-             li { 
-         background: #fff; 
-         padding: 10px; 
-         margin: 5px 0; 
-         border-radius: 6px; 
-         box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-          }
-         </style>
+        <style>
+            body { 
+                background-image: url('/static/barber.jpeg');
+            }
+            h1 {
+                color: #333; 
+            }
+            form {
+                background: #fff; 
+                padding: 20px; 
+                border-radius: 8px; 
+                margin-bottom: 30px; 
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+            }
+            input, select { 
+                padding: 8px; 
+                margin: 8px 0; 
+                width: 100%; 
+                border: 1px solid #ccc; 
+                border-radius: 4px; 
+            }
+            button { 
+                padding: 10px 20px; 
+                background: #333; 
+                color: white; 
+                border: none; 
+                border-radius: 4px; 
+                cursor: pointer; 
+            }
+            button:hover { 
+                background: #555; 
+            }
+            ul {
+                list-style-type: none; 
+                padding: 0; 
+            }
+            li { 
+                background: #fff; 
+                padding: 10px; 
+                margin: 5px 0; 
+                border-radius: 6px; 
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .delete-btn {
+                background: #e74c3c;
+                color: #fff;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .delete-btn:hover {
+                background: #c0392b;
+            }
+        </style>
 
     </head>
     <body>
@@ -127,11 +139,23 @@ def home():
         <h2>Upcoming Appointments</h2>
 
         <ul>
-        <img src = "barber.jpeg"/>
     """
     for row in rows:
-        html += f"<li><strong>{row['name']}</strong> - {row['date']} at {row['time']} ({row['type']})</li>"
+        html += f"""
+        <li>
+            <span><strong>{row['name']}</strong> - {row['date']} at {row['time']} ({row['type']})</span>
+            <form action="/delete/{row['id']}" method="post" style="margin:0;">
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>
+        </li>
+        """
+    html += """
+        </ul>
+    </body>
+    </html>
+    """
     return html
+
 
 
 
@@ -141,7 +165,7 @@ def add(name, date, time, type):
     conn.execute(
     "INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
     (name, date, time, type)
-)
+    )
     conn.commit()
     new_row = conn.execute("SELECT * FROM clients ORDER BY id DESC LIMIT 1").fetchone()
     conn.close()
@@ -149,14 +173,14 @@ def add(name, date, time, type):
 
 
 
-@app.route('/delete/<int:id>')
+@app.route('/delete/<int:id>', methods=["POST"])
 def delete(id):
     conn = get_db_connection()
     cur = conn.execute("DELETE FROM clients WHERE id = ?", (id,))
     conn.commit()
     conn.close()
-    return jsonify({"status": "ok", "id": id})
-
+    # return jsonify({"status": "ok", "id": id})
+    return redirect(url_for("home"), code=303)
 
 
 @app.route('/update/<int:id>/<new_type>')
@@ -171,4 +195,3 @@ def update(id, new_type):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
