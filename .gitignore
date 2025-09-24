@@ -8,7 +8,7 @@ barber.jpeg
 static/
 java/
 barber.db/
- 
+*.db
 
 
 

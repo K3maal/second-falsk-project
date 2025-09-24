@@ -29,6 +29,7 @@ def init_db():
     
 @app.route("/", methods=["GET", "POST"])
 def home():
+    init_db()
     if request.method == "POST":
         name = request.form["name"]
         date = request.form["date"]
@@ -58,8 +59,19 @@ def home():
                 background-image: url('/static/barber.jpeg');
             }
             h1 {
-                color: #333; 
+                color: white; 
+                text-align: center;
+                padding: 3px;
+                background: #333;
             }
+            h2 {
+                color: white;
+                background: #333;
+                display: inline-block;
+                padding: 5px 10px;
+                border-radius: 6px;
+
+                }
             form {
                 background: #fff; 
                 padding: 20px; 
@@ -136,7 +148,8 @@ def home():
             <button type="submit">Book Appointment</button>
         </form>
         
-        <h2>Upcoming Appointments</h2>
+        <h2>Upcoming Appointments:
+        /h2>
 
         <ul>
     """
@@ -157,22 +170,6 @@ def home():
     return html
 
 
-
-
-@app.route('/add/<name>/<date>/<time>/<type>')
-def add(name, date, time, type):
-    conn = get_db_connection()
-    conn.execute(
-    "INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
-    (name, date, time, type)
-    )
-    conn.commit()
-    new_row = conn.execute("SELECT * FROM clients ORDER BY id DESC LIMIT 1").fetchone()
-    conn.close()
-    return jsonify({"status": "ok", "id": new_row["id"], "added": dict(new_row)}), 201
-
-
-
 @app.route('/delete/<int:id>', methods=["POST"])
 def delete(id):
     conn = get_db_connection()
@@ -181,16 +178,6 @@ def delete(id):
     conn.close()
     # return jsonify({"status": "ok", "id": id})
     return redirect(url_for("home"), code=303)
-
-
-@app.route('/update/<int:id>/<new_type>')
-def update(id, new_type):
-    conn = get_db_connection()
-    cur = conn.execute("UPDATE clients SET type = ? WHERE id = ?", (new_type, id))
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "ok", "id": id, "new_type": new_type})
-
 
 
 if __name__ == '__main__':
