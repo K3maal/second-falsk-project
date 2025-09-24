@@ -149,7 +149,7 @@ def home():
         </form>
         
         <h2>Upcoming Appointments:
-        /h2>
+        </h2>
 
         <ul>
     """
