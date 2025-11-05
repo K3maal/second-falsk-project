@@ -1,12 +1,11 @@
-from flask import Flask,request, redirect, url_for
+from flask import Flask, request, redirect, url_for, session
 import sqlite3
 import os 
 
+app = Flask(__name__)
+app.secret_key = 'your-secret-key-change-this-in-production'
 
-app = Flask (__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), "data.db") 
-
-
 
 def get_db_connection():
     conn = sqlite3.connect('data.db')
@@ -26,80 +25,117 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
+
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        if username == "ali" and password == "ali123":
+            session['logged_in'] = True
+            return redirect(url_for('home'))
+        else:
+            login_path = os.path.join('templates', 'login.html')
+            with open(login_path, 'r') as f:
+                html = f.read()
+            return html.replace('{{error}}', 'Invalid username or password!')
     
-    
-@app.route("/", methods=["GET"])
+    login_path = os.path.join('templates', 'login.html')
+    with open(login_path, 'r') as f:
+        html = f.read()
+    return html.replace('{{error}}', '')
+
+
+@app.route("/home", methods=["GET"])
 def home():
+
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
     conn = get_db_connection()
     rows = conn.execute("SELECT * FROM clients ORDER BY date, time").fetchall()
     conn.close()
-
-
     
     html = ""
-    header_path = os.path.join ('templates', 'header.html')
-    with open (header_path , 'r') as f:
-       html = f.read ()
-       
+    header_path = os.path.join('templates', 'header.html')
+    with open(header_path, 'r') as f:
+        html = f.read()
+    
     for row in rows:
         html += f""" 
         <li>
             <span><strong>{row['name']}</strong> - {row['date']} at {row['time']} ({row['type']})</span>
-            <form action="/delete/{row['id']}" method="DELETE" style="margin:0;">
-                <button type="submit" class="delete-btn">Delete</button>
+            <form action="/clients/{row['id']}" method="GET" style="margin:0;">
+                <input type="submit" class="delete-btn" value="Delete">
             </form>
         </li>
         """
-    end_path = os.path.join ('templates', 'end.html')
-    with open (end_path, 'r') as f:
-        html += f.read ()
+    
+    end_path = os.path.join('templates', 'end.html')
+    with open(end_path, 'r') as f:
+        html += f.read()
+    
+    return html
 
-    return html  
-@app.route ('/clients', methods=["POST"])
-def add ():
+@app.route('/clients', methods=["POST"])
+def add():
+
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
     init_db()   
-    if request.method == "POST":
-        name = request.form["name"]
-        date = request.form["date"]
-        time = request.form["time"]
-        type_ = request.form["type"]
+    name = request.form["name"]
+    date = request.form["date"]
+    time = request.form["time"]
+    type_ = request.form["type"]
     
     conn = get_db_connection()
     conn.execute(
-            "INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
-            (name, date, time, type_)
-        )
+        "INSERT INTO clients (name, date, time, type) VALUES (?, ?, ?, ?)",
+        (name, date, time, type_)
+    )
     conn.commit()
     conn.close()
-    return redirect (url_for ("home"), code = 303)
+    
+    return redirect(url_for("home"))
 
-
-
-@app.route('/clients/<int:id>', methods=["DELETE"])
+@app.route('/clients/<int:id>', methods=["GET"])
 def delete(id):
+
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
     conn = get_db_connection()
-    cur = conn.execute("DELETE FROM clients WHERE id = ?", (id,))
+    conn.execute("DELETE FROM clients WHERE id = ?", (id,))
     conn.commit()
     conn.close()
-    return '', 204
+    
+    return redirect(url_for("home"))
 
-@app.route('/clients/<int:id>', methods=["PUT"])
+
+@app.route('/clients/update/<int:id>', methods=["POST"])
 def update(id):
-    if request.method == "PUT":
-        name = request.form["name"]
-        date = request.form["date"]
-        time = request.form["time"]
-        type_ = request.form["type"]
+
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    name = request.form["name"]
+    date = request.form["date"]
+    time = request.form["time"]
+    type_ = request.form["type"]
     
     conn = get_db_connection()
     conn.execute(
-            "UPDATE clients SET name = ?, date = ?, time = ?, type = ? WHERE id = ?",
-            (name, date, time, type_, id)
-        )
+        "UPDATE clients SET name = ?, date = ?, time = ?, type = ? WHERE id = ?",
+        (name, date, time, type_, id)
+    )
     conn.commit()
     conn.close()
-    return '', 204
+    
+    return redirect(url_for("home"))
 
 if __name__ == '__main__':
     app.run(debug=True)
-
