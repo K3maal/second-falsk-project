@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Barber Shop - Login</title>
+<title>Barber Shop - Admin Login</title>
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -24,24 +24,15 @@ h2 {
     color: #333;
     margin-bottom: 10px;
 }
-.subtitle {
+.admin-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
     text-align: center;
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 25px;
-}
-.admin-link {
-    text-align: center;
+    font-size: 12px;
     margin-bottom: 20px;
-}
-.admin-link a {
-    color: #e74c3c;
-    text-decoration: none;
-    font-size: 13px;
     font-weight: bold;
-}
-.admin-link a:hover {
-    text-decoration: underline;
 }
 input[type="email"], input[type="password"] {
     width: 100%;
@@ -59,7 +50,7 @@ input[type="email"]:focus, input[type="password"]:focus {
 input[type="submit"] {
     width: 100%;
     padding: 12px;
-    background: #727379;
+    background: #e74c3c;
     color: white;
     border: none;
     border-radius: 5px;
@@ -69,7 +60,7 @@ input[type="submit"] {
     transition: background 0.3s;
 }
 input[type="submit"]:hover {
-    background: #000000;
+    background: #c0392b;
 }
 .error {
     color: #fff;
@@ -100,22 +91,18 @@ input[type="submit"]:hover {
 <body>
 <div class="login-container">
     <h2><em>Ali Barber Shop</em></h2>
-    <p class="subtitle">Client Login</p>
-    
-    <div class="admin-link">
-        <a href="/admin">🔒 Are you admin? Click here</a>
-    </div>
+    <div class="admin-badge">🔒 ADMIN ACCESS ONLY</div>
     
     {{error}}
     
-    <form method="POST" action="/login">
-        <input type="email" name="email" placeholder="Email Address" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="submit" value="Login">
+    <form method="POST" action="/admin">
+        <input type="email" name="email" placeholder="Admin Email" required>
+        <input type="password" name="password" placeholder="Admin Password" required>
+        <input type="submit" value="Login as Admin">
     </form>
     
     <div class="links">
-        Don't have an account? <a href="/signup">Sign up here</a>
+        <a href="/login">← Back to Client Login</a>
     </div>
 </div>
 </body>
