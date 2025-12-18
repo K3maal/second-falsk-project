@@ -4,15 +4,21 @@ import sqlite3
 import os 
 
 
+
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this-in-production'
 DB_PATH = os.path.join(os.path.dirname(__file__), "data.db") 
+
+
 
 
 def get_db_connection():
     conn = sqlite3.connect('data.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+
 
 
 def init_db():
@@ -26,6 +32,8 @@ def init_db():
             type TEXT NOT NULL
         )
     ''')
+
+
 
     conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -41,9 +49,14 @@ def init_db():
 
 
 
+
 @app.route("/")
 def index():
-    return redirect(url_for('client_login'))
+    welcome_path = os.path.join('templates', 'welcome.html')
+    with open(welcome_path, 'r') as f:
+        html = f.read()
+    return html 
+
 
 
 
@@ -82,6 +95,7 @@ def signup():
 
 
 
+
 @app.route("/login", methods=["GET", "POST"])
 def client_login():
     if request.method == "POST":
@@ -111,6 +125,9 @@ def client_login():
 
 
 
+
+
+
 @app.route("/admin", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -122,7 +139,7 @@ def admin_login():
         if email == "ali@admin.com" and password == "ali123":
             session['logged_in'] = True
             session['role'] = 'admin'
-            print(" Admin logged in successfully")
+            print("Admin logged in successfully")
             return redirect(url_for('home'))
         else:
             admin_path = os.path.join('templates', 'admin-login.html')
@@ -134,6 +151,7 @@ def admin_login():
     with open(admin_path, 'r') as f:
         html = f.read()
     return html.replace('{{error}}', '')
+
 
 
 
@@ -150,7 +168,6 @@ def home():
 
     if session.get('role') == 'admin':
         html += "<h2>Upcoming Appointments:</h2><ul>"
-        html += "<ul>"
         conn = get_db_connection()
         rows = conn.execute("SELECT * FROM clients ORDER BY date, time").fetchall()
         conn.close()
@@ -159,9 +176,14 @@ def home():
             html += f""" 
             <li>
                 <span><strong>{row['name']}</strong> - {row['date']} at {row['time']} ({row['type']})</span>
-                <button class="delete-btn" onclick="deleteClient({row['id']})">Delete</button>
+                <div class="button-group">
+                    <a href="/clients/edit/{row['id']}" class="edit-btn">Edit</a>
+                    <button class="delete-btn" onclick="deleteClient({row['id']})">Delete</button>
+                </div>
             </li>
             """
+        html += "</ul>"
+        
     end_path = os.path.join('templates', 'footer.html')
     with open(end_path, 'r') as f:
         html += f.read()
@@ -197,6 +219,7 @@ def add():
 
 
 
+
 @app.route('/clients/<int:id>', methods=["DELETE"])
 def delete(id):
     if 'logged_in' not in session:
@@ -224,39 +247,46 @@ def delete(id):
 
 
 
-@app.route('/clients/update/<int:id>', methods=["PUT"])
-def update(id):
+@app.route('/clients/edit/<int:id>', methods=["GET", "POST"])
+def edit_client(id):
     if 'logged_in' not in session:
-        return jsonify({'error': 'Not authenticated'}), 401
+        return redirect(url_for('client_login'))
     
     if session.get('role') != 'admin':
-        return jsonify({'error': 'Not authorized - Admin only'}), 403
+        return redirect(url_for('home'))
     
-    try:
-        data = request.get_json()
+    conn = get_db_connection()
+    
+    if request.method == "POST":
+        name = request.form["name"]
+        date = request.form["date"]
+        time = request.form["time"]
+        type_ = request.form["type"]
         
-        name = data.get("name")
-        date = data.get("date")
-        time = data.get("time")
-        type_ = data.get("type")
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
+        conn.execute(
             "UPDATE clients SET name = ?, date = ?, time = ?, type = ? WHERE id = ?",
             (name, date, time, type_, id)
         )
         conn.commit()
-        
-        if cursor.rowcount == 0:
-            conn.close()
-            return jsonify({'error': 'Client not found'}), 404
-        
         conn.close()
-        return jsonify({'message': 'Client updated successfully'}), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return redirect(url_for("home"))
+    
+    client = conn.execute("SELECT * FROM clients WHERE id = ?", (id,)).fetchone()
+    conn.close()
+    
+    if not client:
+        return redirect(url_for("home"))
+    
+    edit_path = os.path.join('templates', 'edit.html')
+    with open(edit_path, 'r') as f:
+        html = f.read()
+    
+    html = html.replace('{{name}}', client['name'])
+    html = html.replace('{{date}}', client['date'])
+    html = html.replace('{{time}}', client['time'])
+    html = html.replace('{{type}}', client['type'])
+    
+    return html
 
 
 
@@ -266,8 +296,6 @@ def update(id):
 def logout():
     session.clear()
     return redirect(url_for('client_login'))
-
-
 
 
 if __name__ == '__main__':

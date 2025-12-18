@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Appointment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .update-btn {
+            background-color: #da0e0e;
+            color: white;
+        }
+        .update-btn:hover {
+            background-color: #c30909;
+        }
+        .cancel-btn {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .cancel-btn:hover {
+            background-color: #7f8c8d;
+        }
+        a {
+            text-decoration: none;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Edit Appointment</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" value="{{name}}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" value="{{date}}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">Time:</label>
+                <input type="time" id="time" name="time" value="{{time}}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="type">Service Type:</label>
+                <select id="type" name="type" required>
+                    <option value="Haircut">Haircut</option>
+                    <option value="Beard Trim">Beard Trim</option>
+                    <option value="Shave">Shave</option>
+                    <option value="Combo">Haircut + Beard</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="update-btn">Update Appointment</button>
+                <a href="/home">
+                    <button type="button" class="cancel-btn" style="width: 100%;">Cancel</button>
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Set the selected option for type
+        document.getElementById('type').value = '{{type}}';
+    </script>
+</body>
+</html>

@@ -36,13 +36,24 @@ border-radius: 4px;
 button { 
 padding: 10px 20px; 
 background: #da0e0e; 
-color: rgb(233, 13, 13); 
+color: white; 
 border: none; 
 border-radius: 4px; 
 cursor: pointer; 
 }
 button:hover { 
 background: #c30909; 
+}
+input[type="submit"] {
+padding: 10px 20px; 
+background: #da0e0e; 
+color: white; 
+border: none; 
+border-radius: 4px; 
+cursor: pointer;
+}
+input[type="submit"]:hover {
+background: #c30909;
 }
 ul {
 list-style-type: none; 
@@ -58,6 +69,23 @@ display: flex;
 justify-content: space-between;
 align-items: center;
 }
+li span {
+flex-grow: 1;
+}
+.edit-btn {
+background: #3498db;
+color: #fff;
+border: none;
+padding: 6px 12px;
+border-radius: 4px;
+cursor: pointer;
+margin-right: 5px;
+text-decoration: none;
+display: inline-block;
+}
+.edit-btn:hover {
+background: #2980b9;
+}
 .delete-btn {
 background: #ff1900;
 color: #fff;
@@ -68,6 +96,10 @@ cursor: pointer;
 }
 .delete-btn:hover {
 background: #c0392b;
+}
+.button-group {
+display: flex;
+gap: 5px;
 }
 </style>
 </head>
@@ -90,7 +122,6 @@ background: #c0392b;
 <input type="submit" value="Book Appointment">
 </form>
 <ul>
-
 <script>
 async function deleteClient(clientId) {
     try {
@@ -100,7 +131,6 @@ async function deleteClient(clientId) {
                 'Content-Type': 'application/json'
             }
         });
-        
         if (response.ok) {
             window.location.reload();
         }
